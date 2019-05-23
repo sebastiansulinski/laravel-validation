@@ -22,7 +22,7 @@ Using this package with front and back end validation allows us having validatio
 composer require sebastiansulinski/laravel-validation
 ```
 
-## Service Provider and Facade
+## Service Provider
 
 Replace default `Illuminate\Validation\ValidationServiceProvider::class` provider in `config/app.php`:
 
