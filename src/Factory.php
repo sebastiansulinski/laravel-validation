@@ -70,7 +70,7 @@ class Factory implements FactoryContract
     /**
      * The Validator resolver instance.
      *
-     * @var Closure
+     * @var \Closure
      */
     protected $resolver;
 

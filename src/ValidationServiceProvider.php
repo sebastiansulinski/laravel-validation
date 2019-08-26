@@ -4,16 +4,10 @@ namespace SSD\LaravelValidation;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\DatabasePresenceVerifier;
+use Illuminate\Contracts\Support\DeferrableProvider;
 
-class ValidationServiceProvider extends ServiceProvider
+class ValidationServiceProvider extends ServiceProvider implements DeferrableProvider
 {
-    /**
-     * Indicates if loading of the provider is deferred.
-     *
-     * @var bool
-     */
-    protected $defer = true;
-
     /**
      * Register the service provider.
      *
@@ -67,8 +61,7 @@ class ValidationServiceProvider extends ServiceProvider
     public function provides()
     {
         return [
-            'validator',
-            'validation.presence',
+            'validator', 'validation.presence',
         ];
     }
 }
