@@ -1,5 +1,7 @@
 # Laravel validation wrapper
 
+> For Laravel 5 please use v1.0.0
+
 This package, when used with form requests expecting Json, generates Json response with the errors representing rule index rather than message for a failed rule i.e.
 
 ```php
