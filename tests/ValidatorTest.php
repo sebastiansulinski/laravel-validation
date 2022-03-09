@@ -63,11 +63,12 @@ class ValidatorTest extends TestCase
 
         $response->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY);
 
-        $response->assertJson($this->validationError([
-            'name' => ['required'],
-            'email' => ['required'],
-            'age' => ['required'],
-        ]));
+        $response->assertJsonFragment([
+            'errors' => [
+                'name' => ['required'],
+                'email' => ['required'],
+                'age' => ['required'],
+            ]]);
 
         $response->assertSessionMissing(['errors']);
     }

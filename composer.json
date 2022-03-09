@@ -20,11 +20,11 @@
         }
     },
     "require-dev": {
-        "orchestra/testbench": "^6.0"
+        "orchestra/testbench": "^7.1"
     },
     "require": {
-        "php": "^7.4|^8.0",
-        "laravel/framework": "^8.0"
+        "php": "^8.0",
+        "laravel/framework": "^9.0"
     },
     "config": {
         "optimize-autoloader": true,
