@@ -1,6 +1,6 @@
 {
     "name": "sebastiansulinski/laravel-validation",
-    "description": "Validation wrapper for Laravel 5.8+",
+    "description": "Validation wrapper for Laravel",
     "license": "MIT",
     "authors": [
         {
@@ -16,19 +16,40 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "SSDTest\\": "tests/"
+            "SSDTest\\": "tests/",
+            "Workbench\\App\\": "workbench/app/",
+            "Workbench\\Database\\Factories\\": "workbench/database/factories/",
+            "Workbench\\Database\\Seeders\\": "workbench/database/seeders/"
         }
     },
     "require-dev": {
-        "orchestra/testbench": "^7.1"
+        "laravel/pint": "dev-main",
+        "orchestra/testbench": "^8.0"
     },
     "require": {
-        "php": "^8.0",
-        "laravel/framework": "^9.0"
+        "php": "^8.1",
+        "laravel/framework": "^10.0"
     },
     "config": {
         "optimize-autoloader": true,
         "preferred-install": "dist",
         "sort-packages": true
+    },
+    "scripts": {
+        "post-autoload-dump": [
+            "@clear",
+            "@prepare"
+        ],
+        "clear": "@php vendor/bin/testbench package:purge-skeleton --ansi",
+        "prepare": "@php vendor/bin/testbench package:discover --ansi",
+        "build": "@php vendor/bin/testbench workbench:build --ansi",
+        "serve": [
+            "Composer\\Config::disableProcessTimeout",
+            "@build",
+            "@php vendor/bin/testbench serve"
+        ],
+        "test": [
+            "@php vendor/bin/phpunit"
+        ]
     }
 }

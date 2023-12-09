@@ -2,30 +2,29 @@
 
 namespace SSD\LaravelValidation;
 
+use Illuminate\Contracts\Support\DeferrableProvider;
+use Illuminate\Contracts\Validation\UncompromisedVerifier;
+use Illuminate\Http\Client\Factory as HttpFactory;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\DatabasePresenceVerifier;
-use Illuminate\Contracts\Support\DeferrableProvider;
+use Illuminate\Validation\NotPwnedVerifier;
 
 class ValidationServiceProvider extends ServiceProvider implements DeferrableProvider
 {
     /**
      * Register the service provider.
-     *
-     * @return void
      */
-    public function register()
+    public function register(): void
     {
         $this->registerPresenceVerifier();
-
+        $this->registerUncompromisedVerifier();
         $this->registerValidationFactory();
     }
 
     /**
      * Register the validation factory.
-     *
-     * @return void
      */
-    protected function registerValidationFactory()
+    protected function registerValidationFactory(): void
     {
         $this->app->singleton('validator', function ($app) {
             $validator = new Factory($app['translator'], $app);
@@ -43,10 +42,8 @@ class ValidationServiceProvider extends ServiceProvider implements DeferrablePro
 
     /**
      * Register the database presence verifier.
-     *
-     * @return void
      */
-    protected function registerPresenceVerifier()
+    protected function registerPresenceVerifier(): void
     {
         $this->app->singleton('validation.presence', function ($app) {
             return new DatabasePresenceVerifier($app['db']);
@@ -54,14 +51,20 @@ class ValidationServiceProvider extends ServiceProvider implements DeferrablePro
     }
 
     /**
-     * Get the services provided by the provider.
-     *
-     * @return array
+     * Register the uncompromised password verifier.
      */
-    public function provides()
+    protected function registerUncompromisedVerifier(): void
     {
-        return [
-            'validator', 'validation.presence',
-        ];
+        $this->app->singleton(UncompromisedVerifier::class, function ($app) {
+            return new NotPwnedVerifier($app[HttpFactory::class]);
+        });
+    }
+
+    /**
+     * Get the services provided by the provider.
+     */
+    public function provides(): array
+    {
+        return ['validator', 'validation.presence', UncompromisedVerifier::class];
     }
 }

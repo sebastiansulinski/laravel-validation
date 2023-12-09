@@ -2,21 +2,19 @@
 
 namespace SSDTest;
 
-use SSD\LaravelValidation\Validator;
+use Illuminate\Validation\ValidationServiceProvider as IlluminateValidationServiceProvider;
 use Orchestra\Testbench\TestCase as BaseTestCase;
 use SSD\LaravelValidation\ValidationServiceProvider;
-use Illuminate\Validation\ValidationServiceProvider as IlluminateValidationServiceProvider;
+use SSD\LaravelValidation\Validator;
 
 class TestCase extends BaseTestCase
 {
     /**
      * Get package providers.
      *
-     * @param  \Illuminate\Foundation\Application $app
-     *
-     * @return array
+     * @param  \Illuminate\Foundation\Application  $app
      */
-    protected function getPackageProviders($app)
+    protected function getPackageProviders($app): array
     {
         return [ValidationServiceProvider::class];
     }
@@ -24,9 +22,7 @@ class TestCase extends BaseTestCase
     /**
      * Get package aliases.
      *
-     * @param  \Illuminate\Foundation\Application $app
-     *
-     * @return array
+     * @param  \Illuminate\Foundation\Application  $app
      */
     protected function getPackageAliases($app): array
     {
@@ -36,29 +32,20 @@ class TestCase extends BaseTestCase
     }
 
     /**
-     * Define environment setup.
+     * Get package providers.
      *
-     * @param  \Illuminate\Foundation\Application $app
-     * @return void
+     * @param  \Illuminate\Foundation\Application  $app
+     * @return array<class-string<\Illuminate\Support\ServiceProvider>, class-string<\Illuminate\Support\ServiceProvider>>
      */
-    protected function getEnvironmentSetUp($app)
+    protected function overrideApplicationBindings($app)
     {
-        $index = array_search(
-            IlluminateValidationServiceProvider::class,
-            $providers = $app['config']->get('app.providers')
-        );
-
-        unset($providers[$index]);
-
-        $app['config']->set('app.providers', $providers);
+        return [
+            IlluminateValidationServiceProvider::class => ValidationServiceProvider::class,
+        ];
     }
 
     /**
      * Get validation response.
-     *
-     * @param  array $response
-     * @param  string $message
-     * @return array
      */
     protected function validationError(array $response, string $message = 'The given data was invalid.'): array
     {

@@ -3,11 +3,11 @@
 namespace SSD\LaravelValidation;
 
 use Closure;
-use Illuminate\Support\Str;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Contracts\Translation\Translator;
-use Illuminate\Validation\PresenceVerifierInterface;
 use Illuminate\Contracts\Validation\Factory as FactoryContract;
+use Illuminate\Support\Str;
+use Illuminate\Validation\PresenceVerifierInterface;
 
 class Factory implements FactoryContract
 {
@@ -28,44 +28,51 @@ class Factory implements FactoryContract
     /**
      * The IoC container instance.
      *
-     * @var \Illuminate\Contracts\Container\Container
+     * @var \Illuminate\Contracts\Container\Container|null
      */
     protected $container;
 
     /**
      * All of the custom validator extensions.
      *
-     * @var array
+     * @var array<string, \Closure|string>
      */
     protected $extensions = [];
 
     /**
      * All of the custom implicit validator extensions.
      *
-     * @var array
+     * @var array<string, \Closure|string>
      */
     protected $implicitExtensions = [];
 
     /**
      * All of the custom dependent validator extensions.
      *
-     * @var array
+     * @var array<string, \Closure|string>
      */
     protected $dependentExtensions = [];
 
     /**
      * All of the custom validator message replacers.
      *
-     * @var array
+     * @var array<string, \Closure|string>
      */
     protected $replacers = [];
 
     /**
      * All of the fallback messages for custom rules.
      *
-     * @var array
+     * @var array<string, string>
      */
     protected $fallbackMessages = [];
+
+    /**
+     * Indicates that unvalidated array keys should be excluded, even if the parent array was validated.
+     *
+     * @var bool
+     */
+    protected $excludeUnvalidatedArrayKeys = true;
 
     /**
      * The Validator resolver instance.
@@ -77,11 +84,9 @@ class Factory implements FactoryContract
     /**
      * Create a new Validator factory instance.
      *
-     * @param  \Illuminate\Contracts\Translation\Translator $translator
-     * @param  \Illuminate\Contracts\Container\Container $container
      * @return void
      */
-    public function __construct(Translator $translator, Container $container = null)
+    public function __construct(Translator $translator, ?Container $container = null)
     {
         $this->container = $container;
         $this->translator = $translator;
@@ -90,31 +95,29 @@ class Factory implements FactoryContract
     /**
      * Create a new Validator instance.
      *
-     * @param  array $data
-     * @param  array $rules
-     * @param  array $messages
-     * @param  array $customAttributes
-     * @return \Illuminate\Validation\Validator
+     * @return \Illuminate\Contracts\Validation\Validator
      */
-    public function make(array $data, array $rules, array $messages = [], array $customAttributes = [])
+    public function make(array $data, array $rules, array $messages = [], array $attributes = [])
     {
         $validator = $this->resolve(
-            $data, $rules, $messages, $customAttributes
+            $data, $rules, $messages, $attributes
         );
 
         // The presence verifier is responsible for checking the unique and exists data
         // for the validator. It is behind an interface so that multiple versions of
         // it may be written besides database. We'll inject it into the validator.
-        if (!is_null($this->verifier)) {
+        if (! is_null($this->verifier)) {
             $validator->setPresenceVerifier($this->verifier);
         }
 
         // Next we'll set the IoC container instance of the validator, which is used to
         // resolve out class based validator extensions. If it is not set then these
         // types of extensions will not be possible on these validation instances.
-        if (!is_null($this->container)) {
+        if (! is_null($this->container)) {
             $validator->setContainer($this->container);
         }
+
+        $validator->excludeUnvalidatedArrayKeys = $this->excludeUnvalidatedArrayKeys;
 
         $this->addExtensions($validator);
 
@@ -124,41 +127,32 @@ class Factory implements FactoryContract
     /**
      * Validate the given data against the provided rules.
      *
-     * @param  array $data
-     * @param  array $rules
-     * @param  array $messages
-     * @param  array $customAttributes
      * @return void
      *
      * @throws \Illuminate\Validation\ValidationException
      */
-    public function validate(array $data, array $rules, array $messages = [], array $customAttributes = [])
+    public function validate(array $data, array $rules, array $messages = [], array $attributes = [])
     {
-        $this->make($data, $rules, $messages, $customAttributes)->validate();
+        $this->make($data, $rules, $messages, $attributes)->validate();
     }
 
     /**
      * Resolve a new Validator instance.
      *
-     * @param  array $data
-     * @param  array $rules
-     * @param  array $messages
-     * @param  array $customAttributes
-     * @return \Illuminate\Validation\Validator
+     * @return \Illuminate\Contracts\Validation\Validator
      */
-    protected function resolve(array $data, array $rules, array $messages, array $customAttributes)
+    protected function resolve(array $data, array $rules, array $messages, array $attributes)
     {
         if (is_null($this->resolver)) {
-            return new Validator($this->translator, $data, $rules, $messages, $customAttributes);
+            return new Validator($this->translator, $data, $rules, $messages, $attributes);
         }
 
-        return call_user_func($this->resolver, $this->translator, $data, $rules, $messages, $customAttributes);
+        return call_user_func($this->resolver, $this->translator, $data, $rules, $messages, $attributes);
     }
 
     /**
      * Add the extensions to a validator instance.
      *
-     * @param  \SSD\LaravelValidation\Validator $validator
      * @return void
      */
     protected function addExtensions(Validator $validator)
@@ -180,9 +174,9 @@ class Factory implements FactoryContract
     /**
      * Register a custom validator extension.
      *
-     * @param  string $rule
-     * @param  \Closure|string $extension
-     * @param  string $message
+     * @param  string  $rule
+     * @param  \Closure|string  $extension
+     * @param  string  $message
      * @return void
      */
     public function extend($rule, $extension, $message = null)
@@ -197,9 +191,9 @@ class Factory implements FactoryContract
     /**
      * Register a custom implicit validator extension.
      *
-     * @param  string $rule
-     * @param  \Closure|string $extension
-     * @param  string $message
+     * @param  string  $rule
+     * @param  \Closure|string  $extension
+     * @param  string  $message
      * @return void
      */
     public function extendImplicit($rule, $extension, $message = null)
@@ -214,9 +208,9 @@ class Factory implements FactoryContract
     /**
      * Register a custom dependent validator extension.
      *
-     * @param  string $rule
-     * @param  \Closure|string $extension
-     * @param  string $message
+     * @param  string  $rule
+     * @param  \Closure|string  $extension
+     * @param  string  $message
      * @return void
      */
     public function extendDependent($rule, $extension, $message = null)
@@ -231,8 +225,8 @@ class Factory implements FactoryContract
     /**
      * Register a custom validator message replacer.
      *
-     * @param  string $rule
-     * @param  \Closure|string $replacer
+     * @param  string  $rule
+     * @param  \Closure|string  $replacer
      * @return void
      */
     public function replacer($rule, $replacer)
@@ -241,9 +235,28 @@ class Factory implements FactoryContract
     }
 
     /**
+     * Indicate that unvalidated array keys should be included in validated data when the parent array is validated.
+     *
+     * @return void
+     */
+    public function includeUnvalidatedArrayKeys()
+    {
+        $this->excludeUnvalidatedArrayKeys = false;
+    }
+
+    /**
+     * Indicate that unvalidated array keys should be excluded from the validated data, even if the parent array was validated.
+     *
+     * @return void
+     */
+    public function excludeUnvalidatedArrayKeys()
+    {
+        $this->excludeUnvalidatedArrayKeys = true;
+    }
+
+    /**
      * Set the Validator instance resolver.
      *
-     * @param  \Closure $resolver
      * @return void
      */
     public function resolver(Closure $resolver)
@@ -274,11 +287,32 @@ class Factory implements FactoryContract
     /**
      * Set the Presence Verifier implementation.
      *
-     * @param  \Illuminate\Validation\PresenceVerifierInterface $presenceVerifier
      * @return void
      */
     public function setPresenceVerifier(PresenceVerifierInterface $presenceVerifier)
     {
         $this->verifier = $presenceVerifier;
+    }
+
+    /**
+     * Get the container instance used by the validation factory.
+     *
+     * @return \Illuminate\Contracts\Container\Container|null
+     */
+    public function getContainer()
+    {
+        return $this->container;
+    }
+
+    /**
+     * Set the container instance used by the validation factory.
+     *
+     * @return $this
+     */
+    public function setContainer(Container $container)
+    {
+        $this->container = $container;
+
+        return $this;
     }
 }

@@ -9,8 +9,6 @@ class ValidatorController extends Controller
 {
     /**
      * Get form view.
-     *
-     * @return string
      */
     public function index(): string
     {
@@ -19,9 +17,6 @@ class ValidatorController extends Controller
 
     /**
      * Store record.
-     *
-     * @param  \SSDTest\StoreRequest $request
-     * @return \Illuminate\Http\JsonResponse
      */
     public function store(StoreRequest $request): JsonResponse
     {

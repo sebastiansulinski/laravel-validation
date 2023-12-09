@@ -10,8 +10,6 @@ class ValidatorTest extends TestCase
 {
     /**
      * Setup the test environment.
-     *
-     * @return void
      */
     protected function setUp(): void
     {
@@ -19,15 +17,15 @@ class ValidatorTest extends TestCase
 
         $router = $this->app->make('router');
 
-        $router->get('/form', '\SSDTest\ValidatorController@index')->name('form');
-        $router->post('validate', '\SSDTest\ValidatorController@store')->name('validate');
+        $router->get('/form', [ValidatorController::class, 'index'])
+            ->name('form');
+
+        $router->post('validate', [ValidatorController::class, 'store'])
+            ->name('validate');
     }
 
     /**
      * Get instance of the ViewErrorBag.
-     *
-     * @param  array $messages
-     * @return \Illuminate\Support\ViewErrorBag
      */
     protected function errorBag(array $messages): ViewErrorBag
     {
@@ -49,8 +47,8 @@ class ValidatorTest extends TestCase
             'errors' => $this->errorBag([
                 'name' => ['The name field is required.'],
                 'email' => ['The email field is required.'],
-                'age' => ['The age field is required.']
-            ])
+                'age' => ['The age field is required.'],
+            ]),
         ]);
     }
 
