@@ -1,5 +1,8 @@
 # Laravel validation wrapper
 
+> **Warning**
+> This package is deprecated and no longer maintained.
+
 This package, when used with form requests expecting Json, generates Json response with the errors representing rule index rather than message for a failed rule i.e.
 
 ```php
